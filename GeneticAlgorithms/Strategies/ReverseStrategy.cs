@@ -45,7 +45,8 @@ namespace GeneticAlgorithms
             var child = new Individual
             {
                 Genes = new String(childGenes),
-                Strategy = this
+                Strategy = this,
+                Parent = parentA
             };
             return child;
         }

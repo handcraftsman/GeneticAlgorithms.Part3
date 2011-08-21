@@ -13,6 +13,7 @@ namespace GeneticAlgorithms
     {
         public int Fitness;
         public string Genes;
+        public Individual Parent;
         public IGeneticStrategy Strategy;
     }
 }

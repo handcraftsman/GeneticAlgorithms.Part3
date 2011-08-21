@@ -34,6 +34,7 @@ namespace GeneticAlgorithms
                 {
                     Genes = new String(childGenes),
                     Strategy = this,
+                    Parent = parentA
                 };
             return child;
         }

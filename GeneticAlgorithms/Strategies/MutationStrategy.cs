@@ -27,7 +27,8 @@ namespace GeneticAlgorithms
             return new Individual
             {
                 Genes = new String(parentGenes),
-                Strategy = this
+                Strategy = this,
+                Parent = parentA
             };
         }
     }
