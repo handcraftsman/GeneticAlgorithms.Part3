@@ -68,6 +68,7 @@
     <Compile Include="Strategies\MutationStrategy.cs" />
     <Compile Include="Strategies\RandomSource.cs" />
     <Compile Include="Strategies\RandomStrategy.cs" />
+    <Compile Include="Strategies\ReverseStrategy.cs" />
     <Compile Include="Strategies\SwapStrategy.cs" />
     <Compile Include="StringDuplicator.cs" />
     <Compile Include="TExtensions.cs" />
