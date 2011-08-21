@@ -11,7 +11,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
 
 using FluentAssert;
@@ -22,21 +21,18 @@ namespace GeneticAlgorithms
 {
     public class RouteOptimizationSolver
     {
-        private const string GeneSet = "abcdefghijklmnopqrstuvwxyz*";
-        private const int Radius = 20;
-
         private static int CalculateRouteLength(
-            IEnumerable<char> sequence,
-            IDictionary<char, Point> pointLookup)
+            string sequence,
+            IRouteSource routeSource)
         {
-            var points = sequence.Select(x => pointLookup[x]).ToList();
+            var points = sequence.ToList();
             int distinctCount = points.Distinct().Count();
             points.Add(points[0]);
             double routeLength = points
-                .Select((x, i) => i == 0 ? 0 : GetDistance(x, points[i - 1]))
+                .Select((x, i) => i == 0 ? 0 : routeSource.GetDistance(x, points[i - 1]))
                 .Sum();
             int fitness =
-                1000 * (pointLookup.Count - distinctCount)
+                1000 * (sequence.Length - distinctCount)
                 + (int)Math.Floor(routeLength);
             return fitness;
         }
@@ -73,58 +69,30 @@ namespace GeneticAlgorithms
             return String.Compare(forward, backward) == -1 ? forward : backward;
         }
 
-        private static double GetDistance(Point pointA, Point pointB)
+        public string Solve(IRouteSource routeSource, int maxSecondsWithoutImprovement)
         {
-            int sideA = pointA.X - pointB.X;
-            int sideB = pointA.Y - pointB.Y;
-            double sideC = Math.Sqrt(sideA * sideA + sideB * sideB);
-            return sideC;
-        }
-
-        public IList<Point> GetNPointsOnCircle(Point center, int radius, int n)
-        {
-            double alpha = Math.PI * 2 / (n + 1);
-            var points = new List<Point>(n);
-            int maxArrayIndex = 2 * radius - 1;
-            Func<int, int> forceInBounds = x => Math.Min(Math.Max(0, x), maxArrayIndex);
-            int i = n / 2;
-            while (i < 3 * n / 2)
+            if (routeSource.OptimalRoute != null)
             {
-                double theta = alpha * i++;
-                int x = (int)(Math.Cos(theta) * radius);
-                int y = (int)(Math.Sin(theta) * radius);
-                var pointOnCircle = new Point(forceInBounds(center.X + x), forceInBounds(center.Y + y));
-                points.Add(pointOnCircle);
+                Console.WriteLine("Expect optimal route " + routeSource.OptimalRoute
+                                  + " to have fitness " + CalculateRouteLength(routeSource.OptimalRoute, routeSource));
             }
-
-            return points;
-        }
-
-        public string Solve()
-        {
-            int pointOffset = 0;
-            var pointLookup = GetNPointsOnCircle(new Point(Radius, Radius), Radius, GeneSet.Length - 1)
-                .ToDictionary(x => GeneSet[pointOffset++], x => x);
-            pointLookup.Add('*', new Point(0, pointLookup['a'].Y));
-
-            Console.WriteLine("Expect optimal route " + GeneSet + " to have fitness " + CalculateRouteLength(GeneSet, pointLookup));
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             var geneticSolver = new GeneticSolver
-                {
-                    GetCanonicalGenes = GetCanonicalGenes,
-                    MaxSecondsWithoutImprovement = 3
-                };
+            {
+                GetCanonicalGenes = GetCanonicalGenes,
+                MaxSecondsWithoutImprovement = maxSecondsWithoutImprovement
+            };
             string result = geneticSolver.GetBest(
-                GeneSet.Length,
-                GeneSet,
-                child => CalculateRouteLength(child, pointLookup),
+                routeSource.GeneSet.Length,
+                routeSource.GeneSet,
+                child => CalculateRouteLength(child, routeSource),
                 (generation, fitness, genes, strategy) => Display(generation, fitness, genes, strategy, stopwatch));
-            Console.WriteLine(result);
+            Console.WriteLine(GetCanonicalGenes(result));
 
-            return result;
+            return GetCanonicalGenes(result);
         }
     }
 
@@ -134,10 +102,11 @@ namespace GeneticAlgorithms
         public class GetCanonicalGenes
         {
             [Test]
-            public void Should_find_the_optimal_solution()
+            public void Should_find_the_optimal_route_with_a_Circle_route_source()
             {
-                string result = new RouteOptimizationSolver().Solve();
-                result.ShouldBeEqualTo("*azyxwvutsrqponmlkjihgfedcb");
+                var routeSource = new CircleRouteSource();
+                string result = new RouteOptimizationSolver().Solve(routeSource, 3);
+                result.ShouldBeEqualTo(routeSource.OptimalRoute);
             }
 
             [Test]

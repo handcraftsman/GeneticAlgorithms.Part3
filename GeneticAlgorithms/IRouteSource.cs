@@ -1,4 +1,4 @@
-﻿//  * **********************************************************************************
+//  * **********************************************************************************
 //  * Copyright (c) Clinton Sheppard
 //  * This source code is subject to terms and conditions of the MIT License.
 //  * A copy of the license can be found in the License.txt file
@@ -9,11 +9,10 @@
 //  * **********************************************************************************
 namespace GeneticAlgorithms
 {
-    internal class Program
+    public interface IRouteSource
     {
-        public static void Main()
-        {
-            new RouteOptimizationSolver().Solve(new CircleRouteSource(), 3);
-        }
+        string GeneSet { get; }
+        string OptimalRoute { get; }
+        double GetDistance(char pointA, char pointB);
     }
 }
