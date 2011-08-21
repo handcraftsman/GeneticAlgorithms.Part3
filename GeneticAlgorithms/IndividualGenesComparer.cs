@@ -1,4 +1,4 @@
-﻿//  * **********************************************************************************
+//  * **********************************************************************************
 //  * Copyright (c) Clinton Sheppard
 //  * This source code is subject to terms and conditions of the MIT License.
 //  * A copy of the license can be found in the License.txt file
@@ -7,14 +7,20 @@
 //  * the terms of the MIT License.
 //  * You must not remove this notice from this software.
 //  * **********************************************************************************
+using System.Collections.Generic;
+
 namespace GeneticAlgorithms
 {
-    internal class Program
+    public class IndividualGenesComparer : IEqualityComparer<Individual>
     {
-        public static void Main()
+        public bool Equals(Individual x, Individual y)
         {
-            new RouteOptimizationSolver().Solve(new TsplibRouteSource(@"Data\eil51"), 60);
-//            new TsplibRouteSourceTests().Benchmark();
+            return x.Genes.Equals(y.Genes);
+        }
+
+        public int GetHashCode(Individual obj)
+        {
+            return obj.Genes.GetHashCode();
         }
     }
 }

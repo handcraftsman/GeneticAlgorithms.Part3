@@ -60,6 +60,7 @@
     <Compile Include="GeneticSolver.cs" />
     <Compile Include="IEnumerableExtensions.cs" />
     <Compile Include="Individual.cs" />
+    <Compile Include="IndividualGenesComparer.cs" />
     <Compile Include="IRouteSource.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

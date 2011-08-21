@@ -101,7 +101,22 @@ namespace GeneticAlgorithms
 
             var children = GenerateChildren(parents, new[] { _randomStrategy }, geneSet)
                 .Where(x => uniqueIndividuals.Add(x.Genes));
-            var strategies = _strategies.ToList();
+
+            int numberOfParentLines = 2;
+            int lastParentLine = numberOfParentLines - 1;
+            int currentParentLine = lastParentLine;
+
+            var parentLines = Enumerable.Range(0, numberOfParentLines)
+                .Select(x => parents.ToList())
+                .ToArray();
+
+            var strategies = Enumerable.Range(0, numberOfParentLines)
+                .Select(x => _strategies.ToList())
+                .ToArray();
+
+            double halfMaxAllowableSecondsWithoutImprovement = MaxSecondsWithoutImprovement / 2;
+            IEqualityComparer<Individual> individualGenesComparer = new IndividualGenesComparer();
+
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -117,7 +132,7 @@ namespace GeneticAlgorithms
                     {
                         bestParent = child;
                         var ancestors = GetAncestors(bestParent).ToList();
-                        strategies = GetStrategyPool(ancestors);
+                        strategies[currentParentLine] = GetStrategyPool(ancestors);
                         if (ancestors.Count > maxIndividualsInPool)
                         {
                             maxIndividualsInPool = ancestors.Count;
@@ -126,21 +141,37 @@ namespace GeneticAlgorithms
                                      bestParent.Fitness,
                                      bestParent.Genes,
                                      bestParent.Strategy.Description);
-                        stopwatch.Reset();
-                        stopwatch.Start();
                     }
                 }
                 generationCount++;
-                parents = parents
+                parentLines[currentParentLine] = parentLines[currentParentLine]
                     .Concat(potentialParents)
                     .OrderBy(x => x.Fitness)
                     .Take(maxIndividualsInPool)
                     .ToList();
-                children = GenerateChildren(parents, strategies, geneSet)
-                    .Where(x => uniqueIndividuals.Add(x.Genes));
-            } while (parents[0].Fitness > 0 &&
+
+                if (parentLines[currentParentLine][0].Fitness == bestParent.Fitness ||
+                    stopwatch.Elapsed.TotalSeconds < halfMaxAllowableSecondsWithoutImprovement)
+                {
+                    if (--currentParentLine < 0)
+                    {
+                        currentParentLine = lastParentLine;
+                    }
+                }
+                else
+                {
+                    parentLines[currentParentLine] = parentLines
+                        .SelectMany(x => x.Take(5))
+                        .Distinct(individualGenesComparer)
+                        .ToList();
+                }
+
+                children = GenerateChildren(parentLines[currentParentLine], strategies[currentParentLine], geneSet)
+                    .Where(x => uniqueIndividuals.Add(GetCanonicalGenes(x.Genes)));
+            } while (bestParent.Fitness > 0 &&
                      stopwatch.Elapsed.TotalSeconds <= MaxSecondsWithoutImprovement);
-            return parents[0].Genes;
+
+            return bestParent.Genes;
         }
 
         private List<IGeneticStrategy> GetStrategyPool(IEnumerable<Individual> ancestors)
