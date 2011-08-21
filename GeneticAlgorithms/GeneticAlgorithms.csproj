@@ -61,7 +61,7 @@
     <Compile Include="Individual.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RouteOptimizationSolverr.cs" />
+    <Compile Include="RouteOptimizationSolver.cs" />
     <Compile Include="Strategies\AbstractStrategy.cs" />
     <Compile Include="Strategies\CrossoverStrategy.cs" />
     <Compile Include="Strategies\IGeneticStrategy.cs" />

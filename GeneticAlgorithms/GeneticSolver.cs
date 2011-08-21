@@ -48,7 +48,9 @@ namespace GeneticAlgorithms
                 }
                 var parentA = parents[parentAIndex];
                 var parentB = parents[parentBIndex];
-                yield return strategy.CreateChild(parentA, parentB, geneSet);
+                var child = strategy.CreateChild(parentA, parentB, geneSet);
+                child.Genes = GetCanonicalGenes(child.Genes);
+                yield return child;
                 count++;
             }
         }
@@ -93,7 +95,7 @@ namespace GeneticAlgorithms
             do
             {
                 var improved = new List<Individual>();
-                foreach (var child in children.Where(x => uniqueIndividuals.Add(GetCanonicalGenes(x.Genes))))
+                foreach (var child in children.Where(x => uniqueIndividuals.Add(x.Genes)))
                 {
                     child.Fitness = getFitness(child.Genes);
                     if (worstParentFitness >= child.Fitness)
