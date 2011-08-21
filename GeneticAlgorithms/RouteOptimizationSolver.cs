@@ -83,7 +83,8 @@ namespace GeneticAlgorithms
             var geneticSolver = new GeneticSolver
             {
                 GetCanonicalGenes = GetCanonicalGenes,
-                MaxSecondsWithoutImprovement = maxSecondsWithoutImprovement
+                MaxSecondsWithoutImprovement = maxSecondsWithoutImprovement,
+                NumberOfParentLines = 4
             };
             string result = geneticSolver.GetBest(
                 routeSource.GeneSet.Length,

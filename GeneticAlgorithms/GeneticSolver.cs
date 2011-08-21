@@ -33,10 +33,12 @@ namespace GeneticAlgorithms
 
             GetCanonicalGenes = genes => genes;
             MaxSecondsWithoutImprovement = 20;
+            NumberOfParentLines = 2;
         }
 
         public Func<string, string> GetCanonicalGenes { private get; set; }
         public double MaxSecondsWithoutImprovement { get; set; }
+        public int NumberOfParentLines { get; set; }
 
         private IEnumerable<Individual> GenerateChildren(
             IList<Individual> parents,
@@ -102,15 +104,14 @@ namespace GeneticAlgorithms
             var children = GenerateChildren(parents, new[] { _randomStrategy }, geneSet)
                 .Where(x => uniqueIndividuals.Add(x.Genes));
 
-            int numberOfParentLines = 2;
-            int lastParentLine = numberOfParentLines - 1;
+            int lastParentLine = NumberOfParentLines - 1;
             int currentParentLine = lastParentLine;
 
-            var parentLines = Enumerable.Range(0, numberOfParentLines)
+            var parentLines = Enumerable.Range(0, NumberOfParentLines)
                 .Select(x => parents.ToList())
                 .ToArray();
 
-            var strategies = Enumerable.Range(0, numberOfParentLines)
+            var strategies = Enumerable.Range(0, NumberOfParentLines)
                 .Select(x => _strategies.ToList())
                 .ToArray();
 
