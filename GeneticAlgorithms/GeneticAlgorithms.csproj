@@ -74,9 +74,18 @@
     <Compile Include="Strategies\SwapStrategy.cs" />
     <Compile Include="StringDuplicator.cs" />
     <Compile Include="TExtensions.cs" />
+    <Compile Include="TsplibRouteSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Data\EightQueensSolutions.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\eil51.opt.tour">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\eil51.tsp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -13,7 +13,8 @@ namespace GeneticAlgorithms
     {
         public static void Main()
         {
-            new RouteOptimizationSolver().Solve(new CircleRouteSource(), 3);
+            new RouteOptimizationSolver().Solve(new TsplibRouteSource(@"Data\eil51"), 3);
+//            new TsplibRouteSourceTests().Benchmark();
         }
     }
 }

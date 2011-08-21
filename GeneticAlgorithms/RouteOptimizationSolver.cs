@@ -21,7 +21,7 @@ namespace GeneticAlgorithms
 {
     public class RouteOptimizationSolver
     {
-        private static int CalculateRouteLength(
+        public static int CalculateRouteLength(
             string sequence,
             IRouteSource routeSource)
         {
