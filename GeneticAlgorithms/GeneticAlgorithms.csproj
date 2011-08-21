@@ -57,10 +57,17 @@
     <Compile Include="CharExtensions.cs" />
     <Compile Include="EightQueensSolver.cs" />
     <Compile Include="GeneticSolver.cs" />
+    <Compile Include="IEnumerableExtensions.cs" />
     <Compile Include="Individual.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RouteOptimizationSolverr.cs" />
+    <Compile Include="Strategies\AbstractStrategy.cs" />
+    <Compile Include="Strategies\CrossoverStrategy.cs" />
+    <Compile Include="Strategies\IGeneticStrategy.cs" />
+    <Compile Include="Strategies\MutationStrategy.cs" />
+    <Compile Include="Strategies\RandomSource.cs" />
+    <Compile Include="Strategies\RandomStrategy.cs" />
     <Compile Include="StringDuplicator.cs" />
     <Compile Include="TExtensions.cs" />
   </ItemGroup>

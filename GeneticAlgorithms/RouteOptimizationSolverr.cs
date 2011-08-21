@@ -38,14 +38,16 @@ namespace GeneticAlgorithms
             return fitness;
         }
 
-        private static void Display(int generation, int fitness, string sequence, Stopwatch stopwatch)
+        private static void Display(int generation, int fitness, string sequence, string strategy, Stopwatch stopwatch)
         {
-            Console.WriteLine("generation {0} fitness {1} {2}  elapsed: {3}",
+            Console.WriteLine("generation {0} fitness {1} {2}  elapsed: {3} by {4}",
                               generation.ToString().PadLeft(5, ' '),
                               fitness.ToString().PadLeft(5, ' '),
                               sequence,
-                              stopwatch.Elapsed);
+                              stopwatch.Elapsed,
+                              strategy);
         }
+
 
         private static double GetDistance(Point pointA, Point pointB)
         {
@@ -88,8 +90,8 @@ namespace GeneticAlgorithms
             string result = new GeneticSolver().GetBest(
                 GeneSet.Length,
                 GeneSet,
-                sequence => CalculateRouteLength(sequence, pointLookup),
-                (generation, fitness, genes) => Display(generation, fitness, genes, stopwatch));
+                child => CalculateRouteLength(child, pointLookup),
+                (generation, fitness, genes, strategy) => Display(generation, fitness, genes, strategy, stopwatch));
             Console.WriteLine(result);
 
             return result;

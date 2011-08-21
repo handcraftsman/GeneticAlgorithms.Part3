@@ -1,4 +1,4 @@
-﻿//  * **********************************************************************************
+//  * **********************************************************************************
 //  * Copyright (c) Clinton Sheppard
 //  * This source code is subject to terms and conditions of the MIT License.
 //  * A copy of the license can be found in the License.txt file
@@ -9,10 +9,9 @@
 //  * **********************************************************************************
 namespace GeneticAlgorithms
 {
-    public class Individual
+    public interface IGeneticStrategy
     {
-        public int Fitness;
-        public string Genes;
-        public IGeneticStrategy Strategy;
+        string Description { get; }
+        Individual CreateChild(Individual parentA, Individual parentB, string geneSet);
     }
 }

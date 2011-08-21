@@ -25,17 +25,17 @@ namespace GeneticAlgorithms
             var solver = new GeneticSolver();
             int geneCount = toMatch.Length;
             Func<string, int> getFitness = child =>
-                {
-                    int matches = Enumerable.Range(0, geneCount)
-                        .Count(x => child[x] != toMatch[x]);
-                    return matches;
-                };
+            {
+                int matches = Enumerable.Range(0, geneCount)
+                    .Count(x => child[x] != toMatch[x]);
+                return matches;
+            };
             string geneSet = new String(toMatch.Distinct().ToArray());
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            Action<int, int, string> displayCurrentBest =
-                (generation, fitness, genes) =>
-                Console.WriteLine("generation\t{0} fitness\t{1} {2}\telapsed: {3}",
+            Action<int, int, string, string> displayCurrentBest =
+                (generation, fitness, genes, strategy) =>
+                    Console.WriteLine("generation\t{0} fitness\t{1} {2}\telapsed: {3}",
                                   generation.ToString().PadLeft(5, ' '),
                                   fitness.ToString().PadLeft(TotalWidth(toMatch), ' '),
                                   genes,

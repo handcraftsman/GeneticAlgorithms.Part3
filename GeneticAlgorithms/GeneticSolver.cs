@@ -10,29 +10,27 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace GeneticAlgorithms
 {
     public class GeneticSolver
     {
         private readonly Random _random = new Random();
+        private readonly IGeneticStrategy[] _strategies;
+        private RandomStrategy _randomStrategy;
 
-        private Individual Crossover(Individual parentA, Individual parentB, string geneSet)
+        public GeneticSolver()
         {
-            int crossOverPoint = _random.Next(parentA.Genes.Length);
-            var childGenes = parentA.Genes.ToCharArray();
-            var parentBGenes = parentB.Genes.ToCharArray();
-            childGenes[crossOverPoint] = parentBGenes[crossOverPoint];
-            var child = new Individual
-                {
-                    Genes = new String(childGenes)
-                };
-            return child;
+            _strategies = (from t in Assembly.GetExecutingAssembly().GetTypes()
+                           where t.GetInterfaces().Contains(typeof(IGeneticStrategy))
+                           where t.GetConstructor(Type.EmptyTypes) != null
+                           select Activator.CreateInstance(t) as IGeneticStrategy).ToArray();
         }
 
         private IEnumerable<Individual> GenerateChildren(
             IList<Individual> parents,
-            Func<Individual, Individual, string, Individual> strategy,
+            IGeneticStrategy strategy,
             string geneSet)
         {
             int count = 0;
@@ -46,37 +44,29 @@ namespace GeneticAlgorithms
                 }
                 var parentA = parents[parentAIndex];
                 var parentB = parents[parentBIndex];
-                yield return strategy(parentA, parentB, geneSet);
+                yield return strategy.CreateChild(parentA, parentB, geneSet);
                 count++;
             }
         }
 
-        private IEnumerable<Individual> GenerateParents(int length, string geneSet)
+        private IEnumerable<Individual> GenerateParents(string geneSet)
         {
-            Func<Individual> next = () => new Individual
-                {
-                    Genes = GenerateSequence(length, geneSet)
-                };
+            Func<Individual> next = () => _randomStrategy.CreateChild(null, null, geneSet);
             var initial = next();
             return initial.Generate(next);
-        }
-
-        private string GenerateSequence(int length, string geneSet)
-        {
-            Func<char> next = () => geneSet[_random.Next(0, geneSet.Length)];
-            char initial = next();
-            return new String(initial.Generate(next).Take(length).ToArray());
         }
 
         public string GetBest(int length,
                               string geneSet,
                               Func<string, int> getFitness,
-                              Action<int, int, string> displayChild)
+                              Action<int, int, string, string> displayChild)
         {
+            _randomStrategy = new RandomStrategy(length);
+
             int maxIndividualsInPool = geneSet.Length * 3;
             int generationCount = 1;
             var uniqueIndividuals = new HashSet<string>();
-            var parents = GenerateParents(length, geneSet)
+            var parents = GenerateParents(geneSet)
                 .Where(x => uniqueIndividuals.Add(x.Genes))
                 .Take(maxIndividualsInPool)
                 .ToList();
@@ -86,10 +76,16 @@ namespace GeneticAlgorithms
             }
             parents = parents.OrderBy(x => x.Fitness).ToList();
 
-            displayChild(generationCount, parents.Last().Fitness, parents.Last().Genes);
+            var worstParent = parents.Last();
+            displayChild(generationCount,
+                         worstParent.Fitness,
+                         worstParent.Genes,
+                         worstParent.Strategy.Description);
 
-            int worstParentFitness = parents.Last().Fitness;
-            var children = GenerateChildren(parents, Crossover, geneSet);
+            int worstParentFitness = worstParent.Fitness;
+
+            IGeneticStrategy strategy = _randomStrategy;
+            var children = GenerateChildren(parents, strategy, geneSet);
             do
             {
                 var improved = new List<Individual>();
@@ -101,7 +97,10 @@ namespace GeneticAlgorithms
                         improved.Add(child);
                         if (worstParentFitness > child.Fitness)
                         {
-                            displayChild(generationCount, child.Fitness, child.Genes);
+                            displayChild(generationCount,
+                                         child.Fitness,
+                                         child.Genes,
+                                         child.Strategy.Description);
                             worstParentFitness = child.Fitness;
                         }
                     }
@@ -114,25 +113,19 @@ namespace GeneticAlgorithms
                         .OrderBy(x => x.Fitness)
                         .Take(maxIndividualsInPool)
                         .ToList();
-                    children = GenerateChildren(parents, Crossover, geneSet);
+                    children = GenerateChildren(parents, strategy, geneSet);
                 }
                 else
                 {
-                    children = GenerateChildren(parents, Mutate, geneSet);
+                    var previousStrategy = strategy;
+                    strategy = _strategies
+                        .Where(x => !ReferenceEquals(x, previousStrategy))
+                        .Shuffle()
+                        .First();
+                    children = GenerateChildren(parents, strategy, geneSet);
                 }
             } while (parents[0].Fitness > 0);
             return parents[0].Genes;
-        }
-
-        private Individual Mutate(Individual parentA, Individual parentB, string geneSet)
-        {
-            var parentGenes = parentA.Genes.ToCharArray();
-            int location = _random.Next(0, parentGenes.Length);
-            parentGenes[location] = geneSet[_random.Next(0, geneSet.Length)];
-            return new Individual
-                {
-                    Genes = new String(parentGenes)
-                };
         }
     }
 }

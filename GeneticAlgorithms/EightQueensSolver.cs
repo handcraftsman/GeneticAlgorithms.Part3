@@ -107,39 +107,39 @@ namespace GeneticAlgorithms
         public string Solve()
         {
             Func<string, int> getFitness = child =>
-                {
-                    var queenLocations = new HashSet<Point>(child.Select(x => x.ToPoint(GeneSet, BoardWidth)));
-                    int fitness = queenLocations.Sum(x => CountQueensAttacked(GetAttackablePoints(x), queenLocations));
-                    fitness += 10000 * (GeneCount - queenLocations.Count);
-                    return fitness;
-                };
+            {
+                var queenLocations = new HashSet<Point>(child.Select(x => x.ToPoint(GeneSet, BoardWidth)));
+                int fitness = queenLocations.Sum(x => CountQueensAttacked(GetAttackablePoints(x), queenLocations));
+                fitness += 10000 * (GeneCount - queenLocations.Count);
+                return fitness;
+            };
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            Action<int, int, string> displayCurrentBest =
-                (generation, fitness, genes) =>
+            Action<int, int, string, string> displayCurrentBest =
+                (generation, fitness, genes, strategy) =>
+                {
+                    var board = new char?[BoardHeight, BoardWidth];
+
+                    foreach (var queenLocation in genes.Select(x => x.ToPoint(GeneSet, BoardWidth)))
                     {
-                        var board = new char?[BoardHeight,BoardWidth];
+                        board[queenLocation.X, queenLocation.Y] = 'Q';
+                    }
 
-                        foreach (var queenLocation in genes.Select(x => x.ToPoint(GeneSet, BoardWidth)))
+                    for (int i = 0; i < BoardHeight; i++)
+                    {
+                        for (int j = 0; j < BoardWidth; j++)
                         {
-                            board[queenLocation.X, queenLocation.Y] = 'Q';
+                            Console.Write(board[i, j] ?? '.');
+                            Console.Write(' ');
                         }
-
-                        for (int i = 0; i < BoardHeight; i++)
-                        {
-                            for (int j = 0; j < BoardWidth; j++)
-                            {
-                                Console.Write(board[i, j] ?? '.');
-                                Console.Write(' ');
-                            }
-                            Console.WriteLine();
-                        }
-                        Console.WriteLine("generation\t{0} fitness\t{1} elapsed: {2}",
-                                          generation.ToString().PadLeft(5, ' '),
-                                          fitness.ToString().PadLeft(2, ' '),
-                                          stopwatch.Elapsed);
-                    };
+                        Console.WriteLine();
+                    }
+                    Console.WriteLine("generation\t{0} fitness\t{1} elapsed: {2}",
+                                      generation.ToString().PadLeft(5, ' '),
+                                      fitness.ToString().PadLeft(2, ' '),
+                                      stopwatch.Elapsed);
+                };
             string result = new GeneticSolver().GetBest(GeneCount,
                                                         GeneSet,
                                                         getFitness,
