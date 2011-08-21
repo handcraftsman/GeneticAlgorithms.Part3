@@ -114,7 +114,8 @@ namespace GeneticAlgorithms
 
             var geneticSolver = new GeneticSolver
                 {
-                    GetCanonicalGenes = GetCanonicalGenes
+                    GetCanonicalGenes = GetCanonicalGenes,
+                    MaxSecondsWithoutImprovement = 3
                 };
             string result = geneticSolver.GetBest(
                 GeneSet.Length,
@@ -132,6 +133,13 @@ namespace GeneticAlgorithms
         [TestFixture]
         public class GetCanonicalGenes
         {
+            [Test]
+            public void Should_find_the_optimal_solution()
+            {
+                string result = new RouteOptimizationSolver().Solve();
+                result.ShouldBeEqualTo("*azyxwvutsrqponmlkjihgfedcb");
+            }
+
             [Test]
             public void Should_return_the_same_result_for_all_rotations_and_reversals_of__abcdef()
             {

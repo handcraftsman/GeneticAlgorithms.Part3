@@ -147,7 +147,8 @@ namespace GeneticAlgorithms
                 };
             var geneticSolver = new GeneticSolver
             {
-                GetCanonicalGenes = GetCanonicalGenes
+                GetCanonicalGenes = GetCanonicalGenes,
+                MaxSecondsWithoutImprovement = 5
             };
             string result = geneticSolver.GetBest(GeneCount,
                                                   GeneSet,

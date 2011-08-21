@@ -22,7 +22,10 @@ namespace GeneticAlgorithms
     {
         public string Duplicate(string toMatch)
         {
-            var solver = new GeneticSolver();
+            var solver = new GeneticSolver
+                {
+                    MaxSecondsWithoutImprovement = 1
+                };
             int geneCount = toMatch.Length;
             Func<string, int> getFitness = child =>
             {

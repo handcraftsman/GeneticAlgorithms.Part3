@@ -9,6 +9,7 @@
 //  * **********************************************************************************
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -28,9 +29,11 @@ namespace GeneticAlgorithms
                            select Activator.CreateInstance(t) as IGeneticStrategy).ToArray();
 
             GetCanonicalGenes = genes => genes;
+            MaxSecondsWithoutImprovement = 20;
         }
 
         public Func<string, string> GetCanonicalGenes { private get; set; }
+        public double MaxSecondsWithoutImprovement { get; set; }
 
         private IEnumerable<Individual> GenerateChildren(
             IList<Individual> parents,
@@ -92,6 +95,9 @@ namespace GeneticAlgorithms
 
             IGeneticStrategy strategy = _randomStrategy;
             var children = GenerateChildren(parents, strategy, geneSet);
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             do
             {
                 var improved = new List<Individual>();
@@ -120,6 +126,8 @@ namespace GeneticAlgorithms
                         .Take(maxIndividualsInPool)
                         .ToList();
                     children = GenerateChildren(parents, strategy, geneSet);
+                    stopwatch.Reset();
+                    stopwatch.Start();
                 }
                 else
                 {
@@ -130,7 +138,8 @@ namespace GeneticAlgorithms
                         .First();
                     children = GenerateChildren(parents, strategy, geneSet);
                 }
-            } while (parents[0].Fitness > 0);
+            } while (parents[0].Fitness > 0 &&
+                     stopwatch.Elapsed.TotalSeconds <= MaxSecondsWithoutImprovement);
             return parents[0].Genes;
         }
     }
