@@ -7,17 +7,22 @@
 //  * the terms of the MIT License.
 //  * You must not remove this notice from this software.
 //  * **********************************************************************************
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 
+using FluentAssert;
+
+using NUnit.Framework;
+
 namespace GeneticAlgorithms
 {
     public class RouteOptimizationSolver
     {
-        private const string GeneSet = "abcdefghijklmnopqrstuvwxyz";
+        private const string GeneSet = "abcdefghijklmnopqrstuvwxyz*";
         private const int Radius = 20;
 
         private static int CalculateRouteLength(
@@ -26,9 +31,7 @@ namespace GeneticAlgorithms
         {
             var points = sequence.Select(x => pointLookup[x]).ToList();
             int distinctCount = points.Distinct().Count();
-            var home = new Point(0, pointLookup['a'].Y);
-            points.Insert(0, home);
-            points.Add(home);
+            points.Add(points[0]);
             double routeLength = points
                 .Select((x, i) => i == 0 ? 0 : GetDistance(x, points[i - 1]))
                 .Sum();
@@ -43,11 +46,32 @@ namespace GeneticAlgorithms
             Console.WriteLine("generation {0} fitness {1} {2}  elapsed: {3} by {4}",
                               generation.ToString().PadLeft(5, ' '),
                               fitness.ToString().PadLeft(5, ' '),
-                              sequence,
+                              GetCanonicalGenes(sequence),
                               stopwatch.Elapsed,
                               strategy);
         }
 
+        public static string GetCanonicalGenes(string input)
+        {
+            char first = input.OrderBy(x => x).First();
+            string doubledForRotation = input + input;
+            string forward = (-1).GenerateFrom(x => doubledForRotation.IndexOf(first, x + 1))
+                .Skip(1)
+                .TakeWhile(x => x < input.Length)
+                .Select(x => doubledForRotation.Substring(x, input.Length))
+                .OrderBy(x => x)
+                .First();
+
+            string reverseDoubledForRotation = new String(doubledForRotation.Reverse().ToArray());
+            string backward = (-1).GenerateFrom(x => reverseDoubledForRotation.IndexOf(first, x + 1))
+                .Skip(1)
+                .TakeWhile(x => x < input.Length)
+                .Select(x => reverseDoubledForRotation.Substring(x, input.Length))
+                .OrderBy(x => x)
+                .First();
+
+            return String.Compare(forward, backward) == -1 ? forward : backward;
+        }
 
         private static double GetDistance(Point pointA, Point pointB)
         {
@@ -79,15 +103,20 @@ namespace GeneticAlgorithms
         public string Solve()
         {
             int pointOffset = 0;
-            var pointLookup = GetNPointsOnCircle(new Point(Radius, Radius), Radius, GeneSet.Length)
+            var pointLookup = GetNPointsOnCircle(new Point(Radius, Radius), Radius, GeneSet.Length - 1)
                 .ToDictionary(x => GeneSet[pointOffset++], x => x);
+            pointLookup.Add('*', new Point(0, pointLookup['a'].Y));
 
             Console.WriteLine("Expect optimal route " + GeneSet + " to have fitness " + CalculateRouteLength(GeneSet, pointLookup));
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            string result = new GeneticSolver().GetBest(
+            var geneticSolver = new GeneticSolver
+                {
+                    GetCanonicalGenes = GetCanonicalGenes
+                };
+            string result = geneticSolver.GetBest(
                 GeneSet.Length,
                 GeneSet,
                 child => CalculateRouteLength(child, pointLookup),
@@ -95,6 +124,30 @@ namespace GeneticAlgorithms
             Console.WriteLine(result);
 
             return result;
+        }
+    }
+
+    public class RouteOptimizationSolverTests
+    {
+        [TestFixture]
+        public class GetCanonicalGenes
+        {
+            [Test]
+            public void Should_return_the_same_result_for_all_rotations_and_reversals_of__abcdef()
+            {
+                var sequences = new[]
+                    {
+                        "abcdef", "bcdefa", "cdefab",
+                        "defabc", "efabcd", "fabcde",
+                        "fedcba", "edcbaf", "dcbafe",
+                        "cbafed", "bafedc", "afedcb",
+                    };
+                foreach (string sequence in sequences)
+                {
+                    RouteOptimizationSolver.GetCanonicalGenes(sequence)
+                        .ShouldBeEqualTo("abcdef");
+                }
+            }
         }
     }
 }
