@@ -59,6 +59,11 @@ namespace GeneticAlgorithms
                                          .TakeWhile(IsOnTheBoard));
         }
 
+        public string GetCanonicalGenes(string genes)
+        {
+            return new String(genes.OrderBy(x => x).ToArray());
+        }
+
         public static Point GoEast(Point point)
         {
             return CreatePoint(point, XOffsetEast, 0);
@@ -140,13 +145,17 @@ namespace GeneticAlgorithms
                                       fitness.ToString().PadLeft(2, ' '),
                                       stopwatch.Elapsed);
                 };
-            string result = new GeneticSolver().GetBest(GeneCount,
-                                                        GeneSet,
-                                                        getFitness,
-                                                        displayCurrentBest);
+            var geneticSolver = new GeneticSolver
+            {
+                GetCanonicalGenes = GetCanonicalGenes
+            };
+            string result = geneticSolver.GetBest(GeneCount,
+                                                  GeneSet,
+                                                  getFitness,
+                                                  displayCurrentBest);
             Console.WriteLine(result);
             return getFitness(result) == 0
-                       ? new String(result.OrderBy(x => x).ToArray())
+                       ? GetCanonicalGenes(result)
                        : null;
         }
     }

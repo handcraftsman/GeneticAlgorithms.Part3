@@ -26,7 +26,11 @@ namespace GeneticAlgorithms
                            where t.GetInterfaces().Contains(typeof(IGeneticStrategy))
                            where t.GetConstructor(Type.EmptyTypes) != null
                            select Activator.CreateInstance(t) as IGeneticStrategy).ToArray();
+
+            GetCanonicalGenes = genes => genes;
         }
+
+        public Func<string, string> GetCanonicalGenes { private get; set; }
 
         private IEnumerable<Individual> GenerateChildren(
             IList<Individual> parents,
@@ -89,7 +93,7 @@ namespace GeneticAlgorithms
             do
             {
                 var improved = new List<Individual>();
-                foreach (var child in children.Where(x => uniqueIndividuals.Add(x.Genes)))
+                foreach (var child in children.Where(x => uniqueIndividuals.Add(GetCanonicalGenes(x.Genes))))
                 {
                     child.Fitness = getFitness(child.Genes);
                     if (worstParentFitness >= child.Fitness)
