@@ -18,7 +18,7 @@ namespace GeneticAlgorithms
 {
     public class ShiftStrategy : AbstractStrategy, IGeneticStrategy
     {
-        public Individual CreateChild(Individual parentA, Individual parentB, string genes)
+        public Individual CreateChild(Individual parentA, Individual parentB, string geneSet)
         {
             const int charsToShift = 1;
             if (parentA.Genes.Length < charsToShift + 1)
