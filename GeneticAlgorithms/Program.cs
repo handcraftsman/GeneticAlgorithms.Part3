@@ -13,7 +13,7 @@ namespace GeneticAlgorithms
     {
         public static void Main()
         {
-            new EightQueensSolver().Solve();
+            new RouteOptimizationSolver().Solve();
         }
     }
 }
